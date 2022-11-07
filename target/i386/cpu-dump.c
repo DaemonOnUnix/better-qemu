@@ -24,6 +24,9 @@
 #include "hw/i386/apic_internal.h"
 #endif
 
+#pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
 /***********************************************************/
 /* x86 debug */
 
@@ -344,6 +347,48 @@ void x86_cpu_dump_local_apic_state(CPUState *cs, int flags)
 #define DUMP_CODE_BYTES_TOTAL    50
 #define DUMP_CODE_BYTES_BACKWARD 20
 
+struct saved_context
+{
+    uint64_t rip;
+    uint64_t rflags;
+    uint64_t registers[16];
+};
+
+//Should dump in json format
+void x86_cpu_dump_state(CPUState *cs, FILE *f, int flags)
+{
+    X86CPU *cpu = X86_CPU(cs);
+    CPUX86State *env = &cpu->env;
+    int eflags = cpu_compute_eflags(env);
+    static const char *reg_names[] = {"RAX", "RCX", "RDX", "RBX", "RSP", "RBP",
+                                    "RBP", "RDI", "R8", "R9", "R10", "R11",
+                                    "R12", "R13", "R14", "R15"};
+    // static const char *seg_names[] = {"ES", "CS", "SS", "DS", "FS", "GS"};
+    static struct saved_context last_context;
+    static uint8_t is_first = 1;
+    struct saved_context context = {
+        .rip = env->eip,
+        .rflags = eflags,
+    };
+    memcpy(context.registers, env->regs, sizeof(context.registers));
+    qemu_fprintf(f, "{RIP:0x%lx,REGS:{", context.rip);
+    for (int i = 0; i < 16; i++)
+    {
+        if (is_first || context.registers[i] != last_context.registers[i])
+        {
+            qemu_fprintf(f, "%s:0x%lx,", reg_names[i], context.registers[i]);
+            last_context.registers[i] = context.registers[i];
+        }
+    }
+    if(is_first || context.rflags != last_context.rflags)
+    {
+        qemu_fprintf(f, "RFLAGS:0x%lx", context.rflags);
+        last_context.rflags = context.rflags;
+    }
+    qemu_fprintf(f, "}\n");
+    is_first = 0;
+}
+#if 0
 void x86_cpu_dump_state(CPUState *cs, FILE *f, int flags)
 {
     X86CPU *cpu = X86_CPU(cs);
@@ -568,3 +613,4 @@ void x86_cpu_dump_state(CPUState *cs, FILE *f, int flags)
         qemu_fprintf(f, "\n");
     }
 }
+#endif
