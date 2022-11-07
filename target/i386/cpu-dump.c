@@ -372,16 +372,22 @@ void x86_cpu_dump_state(CPUState *cs, FILE *f, int flags)
     };
     memcpy(context.registers, env->regs, sizeof(context.registers));
     qemu_fprintf(f, "{RIP:0x%lx,REGS:{", context.rip);
+    bool is_first_modified = true;
     for (int i = 0; i < 16; i++)
     {
         if (is_first || context.registers[i] != last_context.registers[i])
         {
-            qemu_fprintf(f, "%s:0x%lx,", reg_names[i], context.registers[i]);
+            if (!is_first_modified)
+                qemu_fprintf(f, ",");
+            qemu_fprintf(f, "%s:0x%lx", reg_names[i], context.registers[i]);
             last_context.registers[i] = context.registers[i];
+            is_first_modified = false;
         }
     }
     if(is_first || context.rflags != last_context.rflags)
     {
+        if (!is_first_modified)
+            qemu_fprintf(f, ",");
         qemu_fprintf(f, "RFLAGS:0x%lx", context.rflags);
         last_context.rflags = context.rflags;
     }
