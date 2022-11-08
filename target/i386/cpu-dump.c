@@ -371,7 +371,7 @@ void x86_cpu_dump_state(CPUState *cs, FILE *f, int flags)
         .rflags = eflags,
     };
     memcpy(context.registers, env->regs, sizeof(context.registers));
-    qemu_fprintf(f, "{RIP:0x%lx,REGS:{", context.rip);
+    qemu_fprintf(f, "{\"RIP\":%ld,\"REGS\":{", context.rip);
     bool is_first_modified = true;
     for (int i = 0; i < 16; i++)
     {
@@ -379,7 +379,7 @@ void x86_cpu_dump_state(CPUState *cs, FILE *f, int flags)
         {
             if (!is_first_modified)
                 qemu_fprintf(f, ",");
-            qemu_fprintf(f, "%s:0x%lx", reg_names[i], context.registers[i]);
+            qemu_fprintf(f, "\"%s\":%ld", reg_names[i], context.registers[i]);
             last_context.registers[i] = context.registers[i];
             is_first_modified = false;
         }
@@ -388,10 +388,10 @@ void x86_cpu_dump_state(CPUState *cs, FILE *f, int flags)
     {
         if (!is_first_modified)
             qemu_fprintf(f, ",");
-        qemu_fprintf(f, "RFLAGS:0x%lx", context.rflags);
+        qemu_fprintf(f, "\"RFLAGS\":%ld", context.rflags);
         last_context.rflags = context.rflags;
     }
-    qemu_fprintf(f, "}\n");
+    qemu_fprintf(f, "}}}\n");
     is_first = 0;
 }
 #if 0

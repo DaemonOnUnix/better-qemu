@@ -86,12 +86,14 @@ static int print_insn_objdump(bfd_vma pc, disassemble_info *info,
     g_autofree uint8_t *buf = g_malloc(n);
 
     if (info->read_memory_func(pc, buf, n, info) == 0) {
+        qemu_fprintf(info->stream, "[ ");
         for (i = 0; i < n; ++i) {
-            if (i % 32 == 0) {
-                info->fprintf_func(info->stream, "\n%s: ", prefix);
+            info->fprintf_func(info->stream, "%d", buf[i]);
+            if (i < n - 1) {
+                qemu_fprintf(info->stream, ", ");
             }
-            info->fprintf_func(info->stream, "%02x", buf[i]);
         }
+        qemu_fprintf(info->stream, " ]");
     } else {
         info->fprintf_func(info->stream, "unable to read memory");
     }
@@ -224,9 +226,9 @@ void target_disas(FILE *out, CPUState *cpu, target_ulong code,
     }
 
     for (pc = code; size > 0; pc += count, size -= count) {
-	fprintf(out, "0x" TARGET_FMT_lx ":  ", pc);
+	// fprintf(out, "0x" TARGET_FMT_lx ":  ", pc);
 	count = s.info.print_insn(pc, &s.info);
-	fprintf(out, "\n");
+	fprintf(out, ", \"registers\": ");
 	if (count < 0)
 	    break;
         if (size < count) {
