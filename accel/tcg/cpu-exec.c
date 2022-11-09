@@ -33,6 +33,8 @@
 #include "qemu/rcu.h"
 #include "exec/log.h"
 #include "qemu/main-loop.h"
+#include <stdio.h>
+#include "qemu/log.h"
 #if defined(TARGET_I386) && !defined(CONFIG_USER_ONLY)
 #include "hw/i386/apic.h"
 #endif
@@ -279,14 +281,14 @@ static void log_cpu_exec(target_ulong pc, CPUState *cpu,
                          const TranslationBlock *tb)
 {
     if (qemu_log_in_addr_range(pc)) {
-        qemu_log_mask(CPU_LOG_EXEC,
-                      "Trace %d: %p [" TARGET_FMT_lx
-                      "/" TARGET_FMT_lx "/%08x/%08x] %s\n",
-                      cpu->cpu_index, tb->tc.ptr, tb->cs_base, pc,
-                      tb->flags, tb->cflags, lookup_symbol(pc));
+        // qemu_log_mask(CPU_LOG_EXEC,
+        //               "Trace %d: %p [" TARGET_FMT_lx
+        //               "/" TARGET_FMT_lx "/%08x/%08x] %s\n",
+        //               cpu->cpu_index, tb->tc.ptr, tb->cs_base, pc,
+        //               tb->flags, tb->cflags, lookup_symbol(pc));
 
-#if defined(DEBUG_DISAS)
-        if (qemu_loglevel_mask(CPU_LOG_TB_CPU)) {
+// #if defined(DEBUG_DISAS)
+        if (1 || qemu_loglevel_mask(CPU_LOG_TB_CPU)) {
             FILE *logfile = qemu_log_trylock();
             if (logfile) {
                 int flags = 0;
@@ -301,7 +303,7 @@ static void log_cpu_exec(target_ulong pc, CPUState *cpu,
                 qemu_log_unlock(logfile);
             }
         }
-#endif /* DEBUG_DISAS */
+// #endif /* DEBUG_DISAS */
     }
 }
 
@@ -431,6 +433,12 @@ cpu_tb_exec(CPUState *cpu, TranslationBlock *itb, int *tb_exit)
     const void *tb_ptr = itb->tc.ptr;
 
     if (qemu_loglevel_mask(CPU_LOG_TB_CPU | CPU_LOG_EXEC)) {
+        // HERE HEEEEEEEEEERE
+        // FILE *logfile = qemu_log_lock();
+        // if (logfile) {
+        //     fprintf(logfile, "%s\n", __func__);
+        //     qemu_log_unlock(logfile);
+        // }
         log_cpu_exec(log_pc(cpu, itb), cpu, itb);
     }
 

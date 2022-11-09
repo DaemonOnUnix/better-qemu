@@ -138,6 +138,7 @@ void translator_loop(CPUState *cpu, TranslationBlock *tb, int max_insns,
         && qemu_log_in_addr_range(db->pc_first)) {
         FILE *logfile = qemu_log_trylock();
         if (logfile) {
+            // fprintf(logfile, "YEAHHHHH");
             ops->disas_log(db, cpu, logfile);
             // fprintf(logfile, "\n");
             qemu_log_unlock(logfile);

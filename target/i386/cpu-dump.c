@@ -391,7 +391,21 @@ void x86_cpu_dump_state(CPUState *cs, FILE *f, int flags)
         qemu_fprintf(f, "\"RFLAGS\":%ld", context.rflags);
         last_context.rflags = context.rflags;
     }
-    qemu_fprintf(f, "}}}\n");
+    qemu_fprintf(f, "}, \"CODE\": [");
+    target_ulong base = env->segs[R_CS].base + env->eip;
+    target_ulong offs = env->eip;
+    uint8_t code;
+    char codestr[8];
+
+    for (size_t i = 0; i < 15; i++) {
+        if (cpu_memory_rw_debug(cs, base + i, &code, 1, 0) == 0) {
+            snprintf(codestr, sizeof(codestr), "%d", code);
+        } else {
+            snprintf(codestr, sizeof(codestr), "??");
+        }
+        qemu_fprintf(f, "%s%s", i == 0 ? "" : ",", codestr);
+    }
+    qemu_fprintf(f, "]}\n");
     is_first = 0;
 }
 #if 0

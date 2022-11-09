@@ -7023,7 +7023,7 @@ static void i386_tr_disas_log(const DisasContextBase *dcbase,
     DisasContext *dc = container_of(dcbase, DisasContext, base);
 
     // fprintf(logfile, "IN: %s\n", lookup_symbol(dc->base.pc_first));
-    fprintf(logfile, "{\"opcode\": ");
+    // fprintf(logfile, "{\"opcode\": ");
     target_disas(logfile, cpu, dc->base.pc_first, dc->base.tb->size);
     // fprintf(logfile, "}");
 }
